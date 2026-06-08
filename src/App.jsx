@@ -5,6 +5,7 @@ import IdeationForm from './components/IdeationForm';
 import RoadmapView from './components/RoadmapView';
 import DashboardView from './components/DashboardView';
 import LoginView from './components/LoginView';
+import LandingView from './components/LandingView';
 import SettingsView from './components/SettingsView';
 import TeamChat from './components/TeamChat';
 import { generateRoadmap } from './utils/mockDataEngine';
@@ -77,6 +78,8 @@ function ProjectSwitcher({ roadmaps, activeRoadmap, onSelect }) {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false); // true once JWT check is done
+  const [showLogin, setShowLogin] = useState(false); // true to show login instead of landing
+
 
   const [roadmaps, setRoadmaps] = useState([]);
 
@@ -406,12 +409,18 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginView onLogin={(user) => {
-      setIsAuthenticated(true);
-      if (user) {
-        setUserProfile(prev => ({ ...prev, name: user.name, email: user.email, role: 'admin' }));
-      }
-    }} />;
+    if (!showLogin) {
+      return <LandingView onGetStarted={() => setShowLogin(true)} />;
+    }
+    return <LoginView 
+      onBack={() => setShowLogin(false)}
+      onLogin={(user) => {
+        setIsAuthenticated(true);
+        if (user) {
+          setUserProfile(prev => ({ ...prev, name: user.name, email: user.email, role: 'admin' }));
+        }
+      }} 
+    />;
   }
 
   return (

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Lock, ArrowRight, User, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, ShieldCheck, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
-const LoginView = ({ onLogin }) => {
+const LoginView = ({ onLogin, onBack }) => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -74,7 +74,17 @@ const LoginView = ({ onLogin }) => {
 
                 <div style={{ position: 'relative', zIndex: 1 }}>
                     {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2.5rem', position: 'relative' }}>
+                        {onBack && (
+                            <button 
+                                type="button"
+                                onClick={onBack} 
+                                className="btn btn-ghost" 
+                                style={{ position: 'absolute', left: '-1.5rem', top: '-1.5rem', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)' }}
+                            >
+                                <ArrowLeft size={16} /> Home
+                            </button>
+                        )}
                         <div className="flex justify-center" style={{ marginBottom: '1rem' }}>
                             <div className="animate-float" style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
                                 <ShieldCheck size={32} color="var(--accent-indigo)" />
