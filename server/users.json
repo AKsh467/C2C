@@ -1,0 +1,25 @@
+[
+  {
+    "id": "1773056091651",
+    "name": "Aksh Mishra",
+    "email": "aunindra209024@gmail.com",
+    "passwordHash": "$2b$12$eXILCw5Ow0b5hErbkT2RFu8TFipZvVNxb37hPaONcnfQvXYg6no5O",
+    "createdAt": "2026-03-09T11:34:51.652Z",
+    "bio": "Building the next big thing.",
+    "avatar": null
+  },
+  {
+    "id": "1775121737622",
+    "name": "Aksh",
+    "email": "aunindra209204@gmail.com",
+    "passwordHash": "$2b$12$7SVkQ/xNL1ytr8iP0ylG6uWSMdNIgT66f5whPnZApaCcUYxQ6bBMe",
+    "createdAt": "2026-04-02T09:22:17.622Z"
+  },
+  {
+    "id": "1775124640169",
+    "name": "Test User",
+    "email": "test@example.com",
+    "passwordHash": "$2b$12$tNcXkoxEV69pSZt/b4x9e.HlvrF5d5xcNLPRfkRrCQ0o2ibONhIiK",
+    "createdAt": "2026-04-02T10:10:40.169Z"
+  }
+]
