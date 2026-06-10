@@ -309,9 +309,9 @@ app.post('/api/generate-roadmap', async (req, res) => {
         - DO NOT use placeholders like "Set up database" without specifying a tech (e.g. "Configure Prisma migrate with PostgreSQL").
         
         CRITICAL POSITIVE CONSTRAINTS (MANDATORY):
-        1. EVERY task title must contain at least TWO nouns specific to the ACTUAL idea: "${idea}".
-        2. Replace "Phase X" with domain-specific milestones (e.g., "Core Engine Architecture", "Component Library Alpha", "Stripe Integration and Webhooks").
-        3. For Category "${category}", use industry-standard technical terms.
+        1. EVERY task title must contain at least TWO nouns specific to the ACTUAL idea.
+        2. Phase titles MUST NOT be generic. You must invent highly creative, domain-specific milestones based entirely on the user's specific product idea.
+        3. For the given Category, use industry-standard technical terms that an expert engineer would use.
         4. Tasks must be realistically executable by ${sizeInt} people in ${timeline} weeks.
         
         CRITICAL OUTPUT INSTRUCTIONS:
