@@ -15,8 +15,7 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 // ─── Supabase Client ──────────────────────────────────────────────────────────
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -29,8 +28,8 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
     console.log('✅ Supabase client initialized.');
 }
 
-if (!GEMINI_API_KEY) {
-    console.warn('⚠️  WARNING: GEMINI_API_KEY is not defined. AI routes will fail.');
+if (!GROQ_API_KEY) {
+    console.warn('⚠️  WARNING: GROQ_API_KEY is not defined. AI routes will fail.');
 }
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
@@ -336,69 +335,36 @@ app.post('/api/generate-roadmap', async (req, res) => {
         }
         `;
 
-        // Fallback chain: try models in order until one works
-        const MODELS = [
-            'gemini-2.5-flash',
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-pro',
-        ];
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: 'user', content: systemPrompt }],
+                temperature: 0.1,
+                response_format: { type: "json_object" }
+            })
+        });
 
-        let response = null;
-        let usedModel = null;
-
-        for (const model of MODELS) {
-            console.log(`🤖 Trying model: ${model}`);
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt }] }],
-                    generationConfig: {
-                        temperature: 0.1,
-                        responseMimeType: "application/json"
-                    }
-                })
-            });
-
-            if (response.ok) {
-                usedModel = model;
-                console.log(`✅ Success with model: ${model}`);
-                break;
-            }
-
-            // On 503 (overloaded) or 429 (quota for this model), try next
+        if (!response.ok) {
             const errData = await response.json();
-            const status = response.status;
-            console.warn(`⚠️  Model ${model} failed (${status}): ${errData?.error?.message?.substring(0, 80)}`);
-
-            if (status === 429 || status === 503 || status === 404) {
-                continue;
-            } else {
-                // Hard error (400, etc.) - no point retrying other models
-                return res.status(status).json({
-                    error: 'Gemini API failed.',
-                    details: errData?.error?.message
-                });
-            }
-        }
-
-        if (!response || !response.ok) {
-            return res.status(503).json({
-                error: 'All AI models are currently busy. Please try again in a moment.',
-                details: 'All models in the fallback chain returned errors or were not found.'
+            return res.status(response.status).json({
+                error: 'Groq API failed.',
+                details: errData?.error?.message || 'Unknown error'
             });
         }
 
         const data = await response.json();
-        let responseText = data.candidates[0].content.parts[0].text.trim();
-        if (responseText.startsWith('\`\`\`json')) responseText = responseText.substring(7);
-        else if (responseText.startsWith('\`\`\`')) responseText = responseText.substring(3);
-        if (responseText.endsWith('\`\`\`')) responseText = responseText.substring(0, responseText.length - 3);
+        let responseText = data.choices[0].message.content.trim();
+        if (responseText.startsWith('```json')) responseText = responseText.substring(7);
+        else if (responseText.startsWith('```')) responseText = responseText.substring(3);
+        if (responseText.endsWith('```')) responseText = responseText.substring(0, responseText.length - 3);
 
         const generatedRoadmap = JSON.parse(responseText.trim());
-        console.log(`📦 AI response keys (model: ${usedModel}):`, Object.keys(generatedRoadmap));
+        console.log(`📦 AI response keys (model: Groq Llama 3):`, Object.keys(generatedRoadmap));
         res.json({ roadmap: generatedRoadmap });
 
 
