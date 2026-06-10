@@ -339,9 +339,10 @@ app.post('/api/generate-roadmap', async (req, res) => {
         // Fallback chain: try models in order until one works
         const MODELS = [
             'gemini-2.5-flash',
-            'gemini-2.0-flash-lite',
             'gemini-2.0-flash',
             'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-pro',
         ];
 
         let response = null;
@@ -372,14 +373,10 @@ app.post('/api/generate-roadmap', async (req, res) => {
             const status = response.status;
             console.warn(`⚠️  Model ${model} failed (${status}): ${errData?.error?.message?.substring(0, 80)}`);
 
-            if (status === 429) {
-                // Quota exhausted for this model - try next
-                continue;
-            } else if (status === 503) {
-                // Overloaded - try next model
+            if (status === 429 || status === 503 || status === 404) {
                 continue;
             } else {
-                // Hard error (400, 404, etc.) - no point retrying other models
+                // Hard error (400, etc.) - no point retrying other models
                 return res.status(status).json({
                     error: 'Gemini API failed.',
                     details: errData?.error?.message
@@ -390,7 +387,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
         if (!response || !response.ok) {
             return res.status(503).json({
                 error: 'All AI models are currently busy. Please try again in a moment.',
-                details: 'gemini-2.5-flash, gemini-2.0-flash-lite, gemini-2.0-flash, and gemini-1.5-flash all returned errors.'
+                details: 'All models in the fallback chain returned errors or were not found.'
             });
         }
 
