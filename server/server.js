@@ -357,7 +357,10 @@ app.post('/api/generate-roadmap', async (req, res) => {
             },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: systemPrompt }],
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Please generate the execution roadmap for: ${idea}` }
+                ],
                 temperature: 0.1,
                 max_tokens: 8000,
                 response_format: { type: "json_object" }
