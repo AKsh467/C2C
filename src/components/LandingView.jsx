@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowRight, CheckCircle, Zap, Shield, Users, LayoutDashboard } from 'lucide-react';
+import React from 'react';
+import { ArrowRight, CheckCircle, Zap, Users, LayoutDashboard, MousePointer2, Loader2, Sparkles } from 'lucide-react';
 
 const LandingView = ({ onLoginClick, onRegisterClick }) => {
-  const [activeTab, setActiveTab] = useState('todo');
 
   const scrollToFeatures = () => {
     document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' });
@@ -56,10 +55,10 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
           </div>
         </div>
 
-        {/* Dynamic Animated Kanban Board Mockup */}
+        {/* Dynamic Storytelling Mockup Container */}
         <div className="scale-in" style={{ marginTop: '5rem', width: '100%', maxWidth: '1000px', position: 'relative', zIndex: 1, animationDelay: '0.2s' }}>
-          
           <div className="glass-effect" style={{ borderRadius: 'var(--radius-lg)', padding: '1rem', border: '1px solid var(--panel-border)', boxShadow: 'var(--shadow-premium)' }}>
+            
             {/* Fake Browser Chrome */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '0.5rem', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -73,83 +72,120 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
               <div style={{ width: '40px' }} />
             </div>
             
-            {/* Fake App Interface */}
-            <div style={{ background: 'var(--bg-color)', borderRadius: 'var(--radius-md)', padding: '2rem', minHeight: '400px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '2rem', overflow: 'hidden' }}>
+            {/* Storytelling Frame (12s total duration) */}
+            <div style={{ position: 'relative', background: 'var(--bg-color)', borderRadius: 'var(--radius-md)', minHeight: '450px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
               
-              {/* Fake Sidebar */}
-              <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '1rem', borderRight: '1px solid var(--panel-border)', paddingRight: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                  <LayoutDashboard size={18} /> <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Dashboard</span>
+              {/* === PHASE 1: Ideation (0s - 3.5s) === */}
+              <div className="story-phase-1" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+                <div style={{ maxWidth: '600px', width: '100%', textAlign: 'center' }}>
+                  <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Start your journey</h2>
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Define an objective to build an execution plan.</p>
+                  
+                  <div style={{ textAlign: 'left', background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
+                    <div style={{ marginBottom: '1rem', fontWeight: 600 }}>Your startup idea</div>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <div className="typewriter-box" style={{ flex: 1, padding: '0.75rem 1rem', background: 'var(--bg-color)', border: '1px solid var(--panel-border)', borderRadius: 'var(--radius-sm)', color: 'white', display: 'flex', alignItems: 'center' }}>
+                        <span className="typewriter-text">A dating app for dogs...</span>
+                        <span className="cursor-blink">|</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
+                      <button className="btn btn-primary btn-generate-anim" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <Sparkles size={18} /> Generate AI Roadmap
+                      </button>
+                      
+                      {/* Ghost Cursor clicking generate */}
+                      <div className="ghost-cursor-1" style={{ position: 'absolute', zIndex: 50, color: 'white', dropShadow: '0 4px 6px rgba(0,0,0,0.5)' }}>
+                        <MousePointer2 fill="white" size={24} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ height: '30px', width: '100%', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '6px', borderLeft: '3px solid var(--accent-indigo)' }} />
-                <div style={{ height: '30px', width: '80%', background: 'transparent', borderRadius: '6px' }} />
-                <div style={{ height: '30px', width: '90%', background: 'transparent', borderRadius: '6px' }} />
               </div>
 
-              {/* Fake Main Content - Kanban Board */}
-              <div style={{ flex: 1, position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>MVP Phase 1: Authentication</h2>
-                  <div style={{ width: '120px', height: '30px', background: 'var(--accent-gradient)', borderRadius: '6px', opacity: 0.8 }} />
+              {/* === PHASE 2: Loading (3.5s - 5.5s) === */}
+              <div className="story-phase-2" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                <div className="spinner-glow" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '60px', height: '60px' }}>
+                  <Loader2 className="spin-fast" size={40} color="var(--accent-indigo)" />
+                  <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'var(--accent-purple)', filter: 'blur(20px)', opacity: 0.5, borderRadius: '50%' }} />
                 </div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 600 }} className="loading-text-cycle">
+                  <span>Analyzing objective...</span>
+                  <span>Designing database schema...</span>
+                  <span>Creating actionable tasks...</span>
+                </div>
+              </div>
+
+              {/* === PHASE 3: Kanban Execution (5.5s - 12s) === */}
+              <div className="story-phase-3" style={{ position: 'absolute', inset: 0, display: 'flex', gap: '2rem', padding: '2rem' }}>
                 
-                <div style={{ display: 'flex', gap: '1rem', height: '100%' }}>
-                  
-                  {/* To Do Column */}
-                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      TODO <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px' }}>2</span>
-                    </div>
-                    
-                    {/* Animated Card that moves to "Done" */}
-                    <div className="animated-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--accent-purple)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-md)', position: 'relative', zIndex: 10 }}>
-                      <div style={{ height: '12px', width: '30%', background: 'rgba(99, 102, 241, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Implement JWT Middleware</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-blue)' }} />
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Medium</div>
-                      </div>
-                    </div>
+                {/* Fake Sidebar */}
+                <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '1rem', borderRight: '1px solid var(--panel-border)', paddingRight: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                    <LayoutDashboard size={18} /> <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Dashboard</span>
+                  </div>
+                  <div style={{ height: '30px', width: '100%', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '6px', borderLeft: '3px solid var(--accent-indigo)' }} />
+                  <div style={{ height: '30px', width: '80%', background: 'transparent', borderRadius: '6px' }} />
+                </div>
 
-                    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                      <div style={{ height: '12px', width: '40%', background: 'rgba(245, 158, 11, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Create User Schema</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--success-color)' }} />
-                      </div>
-                    </div>
-
+                {/* Main Kanban Content */}
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Dog Dating App MVP</h2>
+                    <div style={{ width: '120px', height: '30px', background: 'var(--accent-gradient)', borderRadius: '6px', opacity: 0.8 }} />
                   </div>
                   
-                  {/* In Progress Column */}
-                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-blue)', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      IN PROGRESS <span style={{ background: 'rgba(59, 130, 246, 0.2)', padding: '2px 8px', borderRadius: '10px' }}>1</span>
-                    </div>
-                    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                      <div style={{ height: '12px', width: '35%', background: 'rgba(239, 68, 68, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>OAuth Google Integration</div>
-                      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ width: '60%', height: '100%', background: 'var(--accent-blue)' }} />
+                  <div style={{ display: 'flex', gap: '1rem', height: '100%' }}>
+                    
+                    {/* To Do Column */}
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>TODO</div>
+                      
+                      {/* Animated Card that moves to "Done" */}
+                      <div className="animated-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-md)', position: 'relative', zIndex: 10 }}>
+                        <div style={{ height: '12px', width: '60%', background: 'rgba(99, 102, 241, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Matchmaking Algorithm</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-purple)' }} />
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>High Priority</div>
+                        </div>
+                      </div>
+
+                      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ height: '12px', width: '40%', background: 'rgba(245, 158, 11, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Profile Picture Uploads</div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Done Column */}
-                  <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--success-color)', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      DONE <span style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '10px' }}>1</span>
-                    </div>
-                    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-sm)', opacity: 0.6 }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, textDecoration: 'line-through', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Setup Express Server</div>
+                    
+                    {/* In Progress Column */}
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-blue)', marginBottom: '0.5rem' }}>IN PROGRESS</div>
+                      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '1rem', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ height: '12px', width: '35%', background: 'rgba(239, 68, 68, 0.5)', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem' }}>Setup Express + Supabase</div>
+                        <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ width: '60%', height: '100%', background: 'var(--accent-blue)' }} />
+                        </div>
+                      </div>
                     </div>
                     
-                    {/* Placeholder where the animated card lands */}
-                    <div className="animated-card-ghost" style={{ border: '2px dashed rgba(16, 185, 129, 0.3)', borderRadius: '8px', height: '110px' }} />
+                    {/* Done Column */}
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--success-color)', marginBottom: '0.5rem' }}>DONE</div>
+                      
+                      {/* Drop Zone Ghost */}
+                      <div className="animated-dropzone" style={{ border: '2px dashed rgba(255, 255, 255, 0.1)', borderRadius: '8px', height: '110px' }} />
+                    </div>
 
                   </div>
                 </div>
+
+                {/* Ghost Cursor Dragging */}
+                <div className="ghost-cursor-2" style={{ position: 'absolute', zIndex: 50, color: 'white', dropShadow: '0 4px 6px rgba(0,0,0,0.5)' }}>
+                  <MousePointer2 fill="white" size={24} />
+                </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -165,7 +201,7 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
               <Zap size={32} />
             </div>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Instant AI Generation</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>Describe your idea in plain English and let Gemini 2.0 Flash break it down into actionable milestones and tasks.</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Describe your idea in plain English and let AI break it down into actionable milestones and tasks.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
@@ -193,26 +229,115 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
       </footer>
 
       <style>{`
-        @keyframes moveCard {
-          0% { transform: translate(0, 0) scale(1); box-shadow: var(--shadow-md); border-color: var(--accent-purple); }
-          15% { transform: translate(10px, -10px) scale(1.05) rotate(2deg); box-shadow: var(--shadow-premium); border-color: var(--accent-purple); }
-          40% { transform: translate(calc(200% + 2rem), -10px) scale(1.05) rotate(2deg); box-shadow: var(--shadow-premium); border-color: var(--accent-purple); }
-          50% { transform: translate(calc(200% + 2rem), 125px) scale(1); box-shadow: var(--shadow-sm); border-color: var(--success-color); }
-          80% { transform: translate(calc(200% + 2rem), 125px) scale(1); box-shadow: var(--shadow-sm); border-color: var(--success-color); }
-          90% { transform: translate(calc(200% + 2rem), 125px) scale(0.95); opacity: 0; }
-          95% { transform: translate(0, 0) scale(0.95); opacity: 0; }
-          100% { transform: translate(0, 0) scale(1); opacity: 1; border-color: var(--accent-purple); }
+        /* Global Story Timing: 12 seconds total loop */
+        
+        /* Phase 1: Ideation (0s - 3.5s) */
+        @keyframes phase1 {
+          0%, 25% { opacity: 1; visibility: visible; }
+          28%, 100% { opacity: 0; visibility: hidden; }
+        }
+        .story-phase-1 { animation: phase1 12s infinite; }
+
+        @keyframes typeText {
+          0%, 5% { width: 0; }
+          20%, 100% { width: 180px; }
+        }
+        .typewriter-text {
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+          width: 0;
+          animation: typeText 12s infinite steps(20, end);
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .cursor-blink { animation: blink 1s infinite; margin-left: 2px; }
+
+        @keyframes cursor1 {
+          0%, 15% { transform: translate(150px, 100px); opacity: 0; }
+          20% { transform: translate(150px, 100px); opacity: 1; }
+          23% { transform: translate(0, 0) scale(0.9); opacity: 1; } /* Clicks */
+          24%, 100% { transform: translate(0, 0) scale(1); opacity: 0; }
+        }
+        .ghost-cursor-1 {
+          right: -20px; bottom: -20px;
+          animation: cursor1 12s infinite;
+        }
+        
+        @keyframes buttonClick {
+          0%, 22% { transform: scale(1); filter: brightness(1); }
+          23% { transform: scale(0.95); filter: brightness(0.8); }
+          24%, 100% { transform: scale(1); filter: brightness(1.2); }
+        }
+        .btn-generate-anim { animation: buttonClick 12s infinite; }
+
+
+        /* Phase 2: Loading (3.5s - 5.5s) */
+        @keyframes phase2 {
+          0%, 28% { opacity: 0; visibility: hidden; transform: scale(0.95); }
+          30%, 45% { opacity: 1; visibility: visible; transform: scale(1); }
+          47%, 100% { opacity: 0; visibility: hidden; transform: scale(1.05); }
+        }
+        .story-phase-2 { animation: phase2 12s infinite; }
+
+        .spin-fast { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        @keyframes cycleText {
+          0%, 30% { opacity: 0; content: "Analyzing objective..."; }
+          32%, 37% { opacity: 1; content: "Analyzing objective..."; }
+          38%, 42% { opacity: 1; content: "Designing database schema..."; }
+          43%, 47% { opacity: 1; content: "Creating actionable tasks..."; }
+          48%, 100% { opacity: 0; content: "Creating actionable tasks..."; }
+        }
+        .loading-text-cycle::before {
+          content: "Analyzing objective...";
+          animation: cycleText 12s infinite;
+        }
+        .loading-text-cycle span { display: none; } /* Hide spans, use pseudo element for easy changing */
+
+
+        /* Phase 3: Kanban (5.5s - 12s) */
+        @keyframes phase3 {
+          0%, 46% { opacity: 0; visibility: hidden; transform: translateY(10px); }
+          48%, 95% { opacity: 1; visibility: visible; transform: translateY(0); }
+          98%, 100% { opacity: 0; visibility: hidden; transform: translateY(-10px); }
+        }
+        .story-phase-3 { animation: phase3 12s infinite; }
+
+        @keyframes cursor2 {
+          0%, 55% { transform: translate(300px, 300px); opacity: 0; }
+          60% { transform: translate(290px, 120px); opacity: 1; } /* Hovers card */
+          62% { transform: translate(290px, 120px) scale(0.85); opacity: 1; } /* Grabs */
+          75% { transform: translate(750px, 120px) scale(0.85); opacity: 1; } /* Drags */
+          77% { transform: translate(750px, 120px) scale(1); opacity: 1; } /* Drops */
+          82%, 100% { transform: translate(750px, 300px); opacity: 0; } /* Flies away */
+        }
+        .ghost-cursor-2 {
+          top: 0; left: 0;
+          animation: cursor2 12s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes cardDrag {
+          0%, 61% { transform: translate(0, 0) rotate(0deg); box-shadow: var(--shadow-md); border-color: var(--panel-border); z-index: 10; opacity: 1; }
+          62% { transform: translate(0, 0) scale(1.05) rotate(2deg); box-shadow: var(--shadow-premium); border-color: var(--accent-purple); z-index: 100; opacity: 1; }
+          75% { transform: translate(465px, 0) scale(1.05) rotate(2deg); box-shadow: var(--shadow-premium); border-color: var(--accent-purple); z-index: 100; opacity: 1; }
+          77% { transform: translate(465px, 0) scale(1) rotate(0deg); box-shadow: var(--shadow-sm); border-color: var(--success-color); z-index: 10; opacity: 1; }
+          95% { transform: translate(465px, 0) scale(1) rotate(0deg); opacity: 1; border-color: var(--success-color); }
+          100% { opacity: 0; border-color: var(--panel-border); }
         }
         .animated-card {
-          animation: moveCard 6s ease-in-out infinite;
+          animation: cardDrag 12s infinite cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes pulseGhost {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.6; }
+
+        @keyframes dropzoneFlash {
+          0%, 76% { border-color: rgba(255, 255, 255, 0.1); background: transparent; }
+          77%, 85% { border-color: var(--success-color); background: rgba(16, 185, 129, 0.1); }
+          86%, 100% { border-color: rgba(255, 255, 255, 0.1); background: transparent; }
         }
-        .animated-card-ghost {
-          animation: pulseGhost 6s ease-in-out infinite;
+        .animated-dropzone {
+          animation: dropzoneFlash 12s infinite;
         }
+
       `}</style>
     </div>
   );
