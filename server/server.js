@@ -341,6 +341,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
             'gemini-2.5-flash',
             'gemini-2.0-flash-lite',
             'gemini-2.0-flash',
+            'gemini-1.5-flash',
         ];
 
         let response = null;
@@ -389,7 +390,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
         if (!response || !response.ok) {
             return res.status(503).json({
                 error: 'All AI models are currently busy. Please try again in a moment.',
-                details: 'gemini-2.5-flash, gemini-2.0-flash-lite, and gemini-2.0-flash all returned errors.'
+                details: 'gemini-2.5-flash, gemini-2.0-flash-lite, gemini-2.0-flash, and gemini-1.5-flash all returned errors.'
             });
         }
 
