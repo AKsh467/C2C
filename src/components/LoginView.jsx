@@ -3,8 +3,8 @@ import { Mail, Lock, ArrowRight, User, ShieldCheck, Eye, EyeOff, ArrowLeft } fro
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
-const LoginView = ({ onLogin, onBack }) => {
-    const [isRegistering, setIsRegistering] = useState(false);
+const LoginView = ({ onLogin, onBack, defaultIsRegistering = false }) => {
+    const [isRegistering, setIsRegistering] = useState(defaultIsRegistering);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

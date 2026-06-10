@@ -78,7 +78,7 @@ function ProjectSwitcher({ roadmaps, activeRoadmap, onSelect }) {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false); // true once JWT check is done
-  const [showLogin, setShowLogin] = useState(false); // true to show login instead of landing
+  const [showLogin, setShowLogin] = useState('none'); // 'none', 'login', 'register'
 
 
   const [roadmaps, setRoadmaps] = useState([]);
@@ -409,11 +409,15 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    if (!showLogin) {
-      return <LandingView onGetStarted={() => setShowLogin(true)} />;
+    if (showLogin === 'none') {
+      return <LandingView 
+        onLoginClick={() => setShowLogin('login')}
+        onRegisterClick={() => setShowLogin('register')}
+      />;
     }
     return <LoginView 
-      onBack={() => setShowLogin(false)}
+      onBack={() => setShowLogin('none')}
+      defaultIsRegistering={showLogin === 'register'}
       onLogin={(user) => {
         setIsAuthenticated(true);
         if (user) {
