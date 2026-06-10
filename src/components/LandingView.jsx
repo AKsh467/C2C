@@ -17,7 +17,7 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
             C2C
           </div>
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Concept2Code</span>
+          <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Chaos2Clarity</span>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button onClick={onLoginClick} className="btn btn-ghost">Log In</button>
@@ -68,7 +68,7 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981' }} />
               </div>
               <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.2rem 2rem', borderRadius: '4px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                app.concept2code.com
+                app.chaos2clarity.com
               </div>
               <div style={{ width: '40px' }} />
             </div>
@@ -189,7 +189,7 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
       
       {/* Footer */}
       <footer style={{ padding: '2rem', textAlign: 'center', borderTop: '1px solid var(--panel-border)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-        <p>© 2026 Concept2Code. Built by Indie Hackers.</p>
+        <p>© 2026 Chaos2Clarity. Built by Indie Hackers.</p>
       </footer>
 
       <style>{`
