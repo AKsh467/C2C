@@ -359,6 +359,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
                 model: 'llama-3.3-70b-versatile',
                 messages: [{ role: 'user', content: systemPrompt }],
                 temperature: 0.1,
+                max_tokens: 8000,
                 response_format: { type: "json_object" }
             })
         });
