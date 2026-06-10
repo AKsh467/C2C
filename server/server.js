@@ -314,24 +314,36 @@ app.post('/api/generate-roadmap', async (req, res) => {
         3. For Category "${category}", use industry-standard technical terms.
         4. Tasks must be realistically executable by ${sizeInt} people in ${timeline} weeks.
         
-        Output a raw JSON object with a single root array "phases". No markdown blocks.
-        Each Phase: { "title": "SPECIFIC_DOMAIN_TITLE", "tasks": [...] }
-        Each Task: { 
-            "id": "t1", 
-            "title": "HYPER_SPECIFIC_ACTION", 
-            "estimatedHours": integer,
-            "completed": false,
-            "assignee": "${creatorName}",
-            "cost": "$0",
-            "prereqs": "None",
-            "details": {
-                "whatThisMeans": "Why this step is critical for ${idea}",
-                "whatThisMeansExample": ["Concrete example 1", "Concrete example 2"],
-                "whyItMatters": ["Reason 1", "Reason 2"],
-                "whatYouNeedToDo": ["Step 1", "Step 2", "Step 3"],
-                "output": "The specific technical deliverable",
-                "outputExample": "A real example of the output"
+        CRITICAL OUTPUT INSTRUCTIONS:
+        You must output a valid JSON object. 
+        DO NOT output the exact placeholder strings shown in the example below. You MUST generate real, highly specific technical content based on the user's idea!
+        
+        Expected JSON Schema:
+        {
+          "phases": [
+            { 
+              "title": "<Generate a real, domain-specific phase title here>", 
+              "tasks": [
+                { 
+                    "id": "t1", 
+                    "title": "<Generate a highly specific technical action here>", 
+                    "estimatedHours": 10,
+                    "completed": false,
+                    "assignee": "${creatorName}",
+                    "cost": "$0",
+                    "prereqs": "None",
+                    "details": {
+                        "whatThisMeans": "<Explain why this specific step is critical for ${idea}>",
+                        "whatThisMeansExample": ["<Generate a real concrete example>", "<Generate another real example>"],
+                        "whyItMatters": ["<Generate a real reason>", "<Generate another real reason>"],
+                        "whatYouNeedToDo": ["<Generate specific step 1>", "<Generate specific step 2>", "<Generate specific step 3>"],
+                        "output": "<Describe the specific technical deliverable>",
+                        "outputExample": "<Provide a real example of the output>"
+                    }
+                }
+              ]
             }
+          ]
         }
         `;
 
