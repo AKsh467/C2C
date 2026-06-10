@@ -309,7 +309,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
         - DO NOT use placeholders like "Set up database" without specifying a tech (e.g. "Configure Prisma migrate with PostgreSQL").
         
         CRITICAL POSITIVE CONSTRAINTS (MANDATORY):
-        1. YOU MUST GENERATE EXACTLY 4 to 6 PHASES.
+        1. YOU MUST GENERATE AT LEAST 5 to 8 PHASES (Milestones). You may generate more if the complexity of the project requires it.
         2. EVERY PHASE MUST HAVE EXACTLY 5 to 8 HIGHLY DETAILED TASKS.
         3. EVERY task title must contain at least TWO nouns specific to the ACTUAL idea. Make task titles long and descriptive (e.g. "Configure PostgreSQL database schemas for User Profiles and Matchmaking algorithms").
         4. Phase titles MUST NOT be generic. You must invent highly creative, domain-specific milestones based entirely on the user's specific product idea.
