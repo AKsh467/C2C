@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, Search, Info, AlertTriangle, Zap, CheckCircle, X, Plus } from 'lucide-react';
+import { UserButton } from '@clerk/clerk-react';
 
 const Header = ({ setView, searchQuery, setSearchQuery, userProfile, notifications, setNotifications, activeRoadmap }) => {
     const [showNotifs, setShowNotifs] = useState(false);
@@ -146,6 +147,11 @@ const Header = ({ setView, searchQuery, setSearchQuery, userProfile, notificatio
                         <Plus size={18} />
                         New Project
                     </button>
+
+                    {/* Clerk User Profile */}
+                    <div style={{ marginLeft: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                        <UserButton afterSignOutUrl="/" />
+                    </div>
                 </div>
             </header>
 

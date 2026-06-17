@@ -4,12 +4,12 @@ import Layout from './components/Layout';
 import IdeationForm from './components/IdeationForm';
 import RoadmapView from './components/RoadmapView';
 import DashboardView from './components/DashboardView';
-import LoginView from './components/LoginView';
 import LandingView from './components/LandingView';
 import SettingsView from './components/SettingsView';
 import TeamChat from './components/TeamChat';
 import { generateRoadmap } from './utils/mockDataEngine';
 import { generateAiRoadmap } from './utils/aiDataEngine';
+import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import './App.css';
 
 // Inline project switcher dropdown for the roadmap view header
@@ -76,10 +76,9 @@ function ProjectSwitcher({ roadmaps, activeRoadmap, onSelect }) {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false); // true once JWT check is done
-  const [showLogin, setShowLogin] = useState('none'); // 'none', 'login', 'register'
-
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   const [roadmaps, setRoadmaps] = useState([]);
 
@@ -96,29 +95,21 @@ function App() {
     localStorage.setItem('c2c_theme', theme);
   }, [theme]);
 
-  // Auto-login: verify stored JWT on mount
+  // Fetch roadmaps when signed in
   useEffect(() => {
-    const token = localStorage.getItem('c2c_token');
-    if (!token) { setAuthChecked(true); return; }
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-    fetch(`${backendUrl}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.user) {
-          setUserProfile(prev => ({ ...prev, name: data.user.name, email: data.user.email, role: 'admin' }));
-          setIsAuthenticated(true);
-          // Load roadmaps from DB after login
-          fetch(`${backendUrl}/api/roadmaps`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => r.ok ? r.json() : null)
-            .then(d => { if (d?.roadmaps) setRoadmaps(d.roadmaps); })
-            .catch(err => console.error('Failed to load roadmaps:', err));
-        } else {
-          localStorage.removeItem('c2c_token');
-        }
-      })
-      .catch(() => localStorage.removeItem('c2c_token'))
-      .finally(() => setAuthChecked(true));
-  }, []);
+    if (isSignedIn && isLoaded) {
+      const loadData = async () => {
+        const token = await getToken();
+        if (!token) return;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        fetch(`${backendUrl}/api/roadmaps`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.ok ? r.json() : null)
+          .then(d => { if (d?.roadmaps) setRoadmaps(d.roadmaps); })
+          .catch(err => console.error('Failed to load roadmaps:', err));
+      };
+      loadData();
+    }
+  }, [isSignedIn, isLoaded, getToken]);
 
   // Check for Shared Roadmap Links on Mount
   useEffect(() => {
@@ -194,7 +185,7 @@ function App() {
     };
 
     handleSharedLink();
-  }, [isAuthenticated]); // Rerun if they log in through the gated screen
+  }, [isSignedIn]); // Rerun if they log in through the gated screen
 
   // Global Shell State
   const [searchQuery, setSearchQuery] = useState('');
@@ -227,12 +218,17 @@ function App() {
     return [];
   });
 
-  // Ensure current local user gets admin role
+  // Sync Clerk user to local userProfile
   useEffect(() => {
-    if (userProfile && !userProfile.role) {
-      setUserProfile(prev => ({ ...prev, role: 'admin' }));
+    if (user && user.primaryEmailAddress) {
+      setUserProfile(prev => ({
+        ...prev,
+        name: user.fullName || user.primaryEmailAddress.emailAddress.split('@')[0],
+        email: user.primaryEmailAddress.emailAddress,
+        role: 'admin'
+      }));
     }
-  }, []);
+  }, [user]);
 
   // Save to LocalStorage whenever these state pieces change
 
@@ -256,7 +252,7 @@ function App() {
 
   // Global Real-Time Synchronization Socket
   useEffect(() => {
-    if (!isAuthenticated || roadmaps.length === 0) return;
+    if (!isSignedIn || roadmaps.length === 0) return;
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
     const socket = io(backendUrl);
@@ -278,7 +274,7 @@ function App() {
     });
 
     return () => socket.disconnect();
-  }, [isAuthenticated, roadmaps.length]); // Re-bind socket when a new project is created or deleted
+  }, [isSignedIn, roadmaps.length]); // Re-bind socket when a new project is created or deleted
 
   // Find the exact active roadmap object (if any)
   const activeRoadmap = roadmaps.find(r => r.id === activeRoadmapId);
@@ -296,7 +292,7 @@ function App() {
       const generated = await generateAiRoadmap(enrichedFormData);
 
       // Persist to Supabase
-      const token = localStorage.getItem('c2c_token');
+      const token = await getToken();
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       await fetch(`${backendUrl}/api/roadmaps`, {
         method: 'POST',
@@ -342,7 +338,7 @@ function App() {
     setRoadmaps(prev => prev.map(r => r.id === updatedRoadmap.id ? updatedRoadmap : r));
     // Persist update to Supabase
     try {
-      const token = localStorage.getItem('c2c_token');
+      const token = await getToken();
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       await fetch(`${backendUrl}/api/roadmaps/${updatedRoadmap.id}`, {
         method: 'PUT',
@@ -368,7 +364,7 @@ function App() {
       }
       // Delete from Supabase
       try {
-        const token = localStorage.getItem('c2c_token');
+        const token = await getToken();
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
         await fetch(`${backendUrl}/api/roadmaps/${id}`, {
           method: 'DELETE',
@@ -395,8 +391,8 @@ function App() {
     return total + r.milestones.reduce((acc, m) => acc + m.tasks.filter(t => t.completed).length, 0);
   }, 0);
 
-  // Show nothing while we verify the JWT (prevents flash of login page)
-  if (!authChecked) {
+  // Show nothing while Clerk loads
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: '100vh' }}>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -408,23 +404,8 @@ function App() {
     );
   }
 
-  if (!isAuthenticated) {
-    if (showLogin === 'none') {
-      return <LandingView 
-        onLoginClick={() => setShowLogin('login')}
-        onRegisterClick={() => setShowLogin('register')}
-      />;
-    }
-    return <LoginView 
-      onBack={() => setShowLogin('none')}
-      defaultIsRegistering={showLogin === 'register'}
-      onLogin={(user) => {
-        setIsAuthenticated(true);
-        if (user) {
-          setUserProfile(prev => ({ ...prev, name: user.name, email: user.email, role: 'admin' }));
-        }
-      }} 
-    />;
+  if (!isSignedIn) {
+    return <LandingView />;
   }
 
   return (
@@ -439,15 +420,13 @@ function App() {
       notificationsPrefs={notificationsPrefs}
       setNotificationsPrefs={setNotificationsPrefs}
       onLogout={() => {
-        // Clear JWT + all stale data so next login starts fresh
-        localStorage.removeItem('c2c_token');
         localStorage.removeItem('c2c_roadmaps');
         localStorage.removeItem('c2c_notifications');
         localStorage.removeItem('c2c_notes');
         setRoadmaps([]);
         setActiveRoadmapId(null);
         setView('dashboard');
-        setIsAuthenticated(false);
+        signOut();
       }}
       activeRoadmap={activeRoadmap}
       activeRoadmapId={activeRoadmapId}
@@ -533,7 +512,6 @@ function App() {
             theme={theme}
             setTheme={setTheme}
             onLogout={() => {
-              localStorage.removeItem('c2c_token');
               localStorage.removeItem('c2c_roadmaps');
               localStorage.removeItem('c2c_notifications');
               localStorage.removeItem('c2c_notes');
@@ -541,7 +519,7 @@ function App() {
               setRoadmaps([]);
               setActiveRoadmapId(null);
               setView('dashboard');
-              setIsAuthenticated(false);
+              signOut();
             }}
             notificationsPrefs={notificationsPrefs}
             setNotificationsPrefs={setNotificationsPrefs}

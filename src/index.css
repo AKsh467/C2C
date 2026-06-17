@@ -381,3 +381,5 @@ body.theme-light .input-base option {
 .transition-all {
   transition: all var(--transition-normal);
 }
+@media (max-width: 1024px) { .auth-sidebar { display: none !important; } }
+@media (min-width: 1024px) { .auth-sidebar { display: flex !important; } }

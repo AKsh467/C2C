@@ -1,7 +1,85 @@
 import React from 'react';
 import { ArrowRight, CheckCircle, Zap, Users, LayoutDashboard, MousePointer2, Loader2, Sparkles } from 'lucide-react';
+import { SignIn, SignUp } from '@clerk/clerk-react';
 
-const LandingView = ({ onLoginClick, onRegisterClick }) => {
+const LandingView = () => {
+  const [authMode, setAuthMode] = React.useState(null); // 'signin' | 'signup' | null
+
+  if (authMode) {
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-color)' }}>
+        {/* Left Side: Branding / Marketing */}
+        <div className="auth-sidebar" style={{ flex: 1, flexDirection: 'column', padding: '4rem', background: 'var(--card-bg)', borderRight: '1px solid var(--panel-border)', position: 'relative', overflow: 'hidden' }}>
+          {/* Decorative Glow */}
+          <div style={{ position: 'absolute', top: '10%', left: '20%', width: '300px', height: '300px', background: 'var(--accent-purple)', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.15, zIndex: 0 }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 1, marginBottom: 'auto' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>
+              C2C
+            </div>
+            <span style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Chaos2Clarity</span>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{ fontSize: '3rem', lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-1px' }}>
+              Build your <br/><span className="gradient-text">master plan.</span>
+            </h2>
+            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '400px', marginBottom: '3rem' }}>
+              Join thousands of founders and engineers turning their chaotic ideas into actionable, step-by-step technical roadmaps.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-indigo)' }}>
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Instant AI Generation</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Get a complete roadmap in seconds.</p>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success-color)' }}>
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Actionable Milestones</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Step-by-step tasks to guide your execution.</p>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-purple)' }}>
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Tech Stack Clarity</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Optimal tools recommended for your specific idea.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Auth Form */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', position: 'relative' }}>
+          {/* Mobile Header */}
+          <div className="mobile-header" style={{ position: 'absolute', top: '2rem', left: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+             <button onClick={() => setAuthMode(null)} className="btn btn-ghost" style={{ padding: '0.5rem' }}>← Back</button>
+          </div>
+          
+          <div style={{ width: '100%', maxWidth: '400px' }}>
+            {authMode === 'signin' ? (
+              <SignIn routing="virtual" signUpUrl={() => setAuthMode('signup')} appearance={{ elements: { rootBox: { width: '100%' }, card: { width: '100%', boxShadow: 'none', border: 'none', background: 'transparent' } } }} />
+            ) : (
+              <SignUp routing="virtual" signInUrl={() => setAuthMode('signin')} appearance={{ elements: { rootBox: { width: '100%' }, card: { width: '100%', boxShadow: 'none', border: 'none', background: 'transparent' } } }} />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const scrollToFeatures = () => {
     document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' });
@@ -19,8 +97,8 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
           <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Chaos2Clarity</span>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button onClick={onLoginClick} className="btn btn-ghost">Log In</button>
-          <button onClick={onRegisterClick} className="btn btn-primary">Get Started</button>
+          <button className="btn btn-ghost" onClick={() => setAuthMode('signin')}>Log In</button>
+          <button className="btn btn-primary" onClick={() => setAuthMode('signup')}>Get Started</button>
         </div>
       </nav>
 
@@ -46,7 +124,7 @@ const LandingView = ({ onLoginClick, onRegisterClick }) => {
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button onClick={onRegisterClick} className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+            <button className="btn btn-primary" onClick={() => setAuthMode('signup')} style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
               Start Building for Free <ArrowRight size={20} />
             </button>
             <button onClick={scrollToFeatures} className="btn btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>

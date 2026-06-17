@@ -32,20 +32,14 @@ if (!GROQ_API_KEY) {
     console.warn('⚠️  WARNING: GROQ_API_KEY is not defined. AI routes will fail.');
 }
 
+const { clerkMiddleware, requireAuth: ClerkExpressRequireAuth } = require('@clerk/express');
+
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
-const requireAuth = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'No token provided.' });
-    try {
-        req.user = jwt.verify(token, JWT_SECRET);
-        next();
-    } catch {
-        res.status(401).json({ error: 'Invalid or expired token.' });
-    }
-};
+const requireAuth = ClerkExpressRequireAuth();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors());
+app.use(clerkMiddleware());
 app.use(express.json({ limit: '10mb' })); // large limit for base64 avatars
 
 // ─── Socket.IO ───────────────────────────────────────────────────────────────
@@ -81,126 +75,8 @@ io.on('connection', (socket) => {
 
 // ─── Auth Routes ──────────────────────────────────────────────────────────────
 
-// REGISTER
-app.post('/api/auth/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        if (!name || !email || !password)
-            return res.status(400).json({ error: 'Name, email, and password are required.' });
-        if (password.length < 6)
-            return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-
-        // Check if user exists
-        const { data: existing } = await supabase
-            .from('users')
-            .select('id')
-            .eq('email', email.toLowerCase().trim())
-            .maybeSingle();
-
-        if (existing)
-            return res.status(409).json({ error: 'An account with this email already exists.' });
-
-        const password_hash = await bcrypt.hash(password, 12);
-
-        const { data: newUser, error } = await supabase
-            .from('users')
-            .insert({
-                name: name.trim(),
-                email: email.toLowerCase().trim(),
-                password_hash,
-            })
-            .select('id, name, email')
-            .single();
-
-        if (error) throw error;
-
-        const token = jwt.sign({ id: newUser.id, email: newUser.email, name: newUser.name }, JWT_SECRET, { expiresIn: '30d' });
-        console.log(`✅ New user registered: ${newUser.email}`);
-        res.status(201).json({ token, user: { id: newUser.id, name: newUser.name, email: newUser.email } });
-
-    } catch (error) {
-        console.error('Register error:', error);
-        res.status(500).json({ error: 'Registration failed. Please try again.' });
-    }
-});
-
-// LOGIN
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password)
-            return res.status(400).json({ error: 'Email and password are required.' });
-
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('id, name, email, password_hash')
-            .eq('email', email.toLowerCase().trim())
-            .maybeSingle();
-
-        if (error || !user)
-            return res.status(401).json({ error: 'Invalid email or password.' });
-
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch)
-            return res.status(401).json({ error: 'Invalid email or password.' });
-
-        const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
-        console.log(`🔓 User logged in: ${user.email}`);
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Login failed. Please try again.' });
-    }
-});
-
-// GET PROFILE
-app.get('/api/auth/me', requireAuth, async (req, res) => {
-    const { data: user, error } = await supabase
-        .from('users')
-        .select('id, name, email, bio, role, avatar')
-        .eq('id', req.user.id)
-        .maybeSingle();
-
-    if (error || !user) return res.status(404).json({ error: 'User not found.' });
-    res.json({ user });
-});
-
-// UPDATE PROFILE
-app.put('/api/auth/me', requireAuth, async (req, res) => {
-    try {
-        const { name, bio, avatar } = req.body;
-        const updates = {};
-        if (name) updates.name = name.trim();
-        if (bio !== undefined) updates.bio = bio.trim();
-        if (avatar !== undefined) updates.avatar = avatar;
-
-        const { data: user, error } = await supabase
-            .from('users')
-            .update(updates)
-            .eq('id', req.user.id)
-            .select('id, name, email, bio, role, avatar')
-            .single();
-
-        if (error) throw error;
-        res.json({ user });
-    } catch (error) {
-        console.error('Update profile error:', error);
-        res.status(500).json({ error: 'Failed to update profile.' });
-    }
-});
-
-// DELETE ACCOUNT
-app.delete('/api/auth/me', requireAuth, async (req, res) => {
-    try {
-        const { error } = await supabase.from('users').delete().eq('id', req.user.id);
-        if (error) throw error;
-        res.json({ message: 'Account deleted successfully.' });
-    } catch (error) {
-        console.error('Delete account error:', error);
-        res.status(500).json({ error: 'Failed to delete account.' });
-    }
-});
+// ─── Auth Routes ──────────────────────────────────────────────────────────────
+// Custom auth routes have been removed in favor of Clerk.
 
 // ─── Roadmap Routes ───────────────────────────────────────────────────────────
 
@@ -210,7 +86,7 @@ app.get('/api/roadmaps', requireAuth, async (req, res) => {
         const { data, error } = await supabase
             .from('roadmaps')
             .select('*')
-            .eq('user_id', req.user.id)
+            .eq('user_id', req.auth.userId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -231,7 +107,7 @@ app.post('/api/roadmaps', requireAuth, async (req, res) => {
 
         const { error } = await supabase.from('roadmaps').insert({
             id: roadmap.id,
-            user_id: req.user.id,
+            user_id: req.auth.userId,
             idea_name: roadmap.ideaName,
             category: roadmap.category,
             data: roadmap,
@@ -253,7 +129,7 @@ app.put('/api/roadmaps/:id', requireAuth, async (req, res) => {
             .from('roadmaps')
             .update({ data: roadmap, updated_at: new Date().toISOString() })
             .eq('id', req.params.id)
-            .eq('user_id', req.user.id);
+            .eq('user_id', req.auth.userId);
 
         if (error) throw error;
         res.json({ success: true });
@@ -270,7 +146,7 @@ app.delete('/api/roadmaps/:id', requireAuth, async (req, res) => {
             .from('roadmaps')
             .delete()
             .eq('id', req.params.id)
-            .eq('user_id', req.user.id);
+            .eq('user_id', req.auth.userId);
 
         if (error) throw error;
         res.json({ success: true });
@@ -293,8 +169,9 @@ app.post('/api/generate-roadmap', async (req, res) => {
         const sizeInt = parseInt(teamSize) || 1;
 
         const systemPrompt = `
-        You are an expert CTO and AI Product Strategist. Your primary mission is to transform raw user ideas into HYPER-SPECIFIC, high-technical-density Execution Roadmaps.
-        
+        You are a Staff-Level Software Engineer and elite CTO building an actionable execution roadmap for a new project.
+        Your mission is to output a hyper-specific, technically accurate JSON roadmap.
+
         USER IDEA: "${idea}"
         CATEGORY: "${category}"
         TIMELINE: "${timeline} weeks"
@@ -303,49 +180,59 @@ app.post('/api/generate-roadmap', async (req, res) => {
         SCOPE: ${scope}
         BUDGET: ${budget ? '$' + budget : 'Unknown/N/A'}
         
-        CRITICAL NEGATIVE CONSTRAINTS (FORBIDDEN TERMS):
-        - DO NOT USE the words "Discovery", "Research", "Testing", "Deployment", "Phase 1", "Phase 2", "Launch", or "Marketing" in your Titles.
-        - DO NOT provide generic steps like "Define Requirements" or "Final Testing".
-        - DO NOT use placeholders like "Set up database" without specifying a tech (e.g. "Configure Prisma migrate with PostgreSQL").
+        STRICT STRUCTURAL CONSTRAINTS:
+        1. YOU MUST GENERATE EXACTLY 5 to 8 PHASES. 
+        2. EVERY PHASE MUST HAVE EXACTLY 5 to 8 TASKS.
+        3. Phase titles must be specific to the domain (e.g. "Core Audio Pipeline Infrastructure" instead of "Phase 1: Setup").
+        4. Task titles MUST be descriptive (e.g. "Provision RDS PostgreSQL with pgvector for Semantic Search" instead of "Database Setup").
+        5. You must suggest real technologies, file names, API endpoints, or shell commands in the details where appropriate.
         
-        CRITICAL POSITIVE CONSTRAINTS (MANDATORY):
-        1. YOU MUST GENERATE AT LEAST 5 to 8 PHASES (Milestones). You may generate more if the complexity of the project requires it.
-        2. EVERY PHASE MUST HAVE EXACTLY 5 to 8 HIGHLY DETAILED TASKS.
-        3. EVERY task title must contain at least TWO nouns specific to the ACTUAL idea. Make task titles long and descriptive (e.g. "Configure PostgreSQL database schemas for User Profiles and Matchmaking algorithms").
-        4. Phase titles MUST NOT be generic. You must invent highly creative, domain-specific milestones based entirely on the user's specific product idea.
-        5. For the given Category, use industry-standard technical terms that an expert engineer would use.
-        6. In the "details" section of each task, you MUST write at least 2 long sentences for "whatThisMeans" and provide highly descriptive, paragraph-length strings for the arrays and outputs. DO NOT output short strings.
+        OUTPUT FORMAT (JSON SCHEMA):
+        You must strictly adhere to the following JSON schema. Do not output anything outside of this JSON.
         
-        CRITICAL OUTPUT INSTRUCTIONS:
-        You must output a valid JSON object. 
-        DO NOT output the exact placeholder strings shown in the example below. You MUST generate real, highly specific technical content based on the user's idea!
-        
-        Expected JSON Schema:
         {
-          "phases": [
-            { 
-              "title": "<Generate a real, domain-specific phase title here>", 
-              "tasks": [
-                { 
-                    "id": "t1", 
-                    "title": "<Generate a highly specific technical action here>", 
-                    "estimatedHours": 10,
-                    "completed": false,
-                    "assignee": "${creatorName}",
-                    "cost": "$0",
-                    "prereqs": "None",
-                    "details": {
-                        "whatThisMeans": "<Explain why this specific step is critical for ${idea}>",
-                        "whatThisMeansExample": ["<Generate a real concrete example>", "<Generate another real example>"],
-                        "whyItMatters": ["<Generate a real reason>", "<Generate another real reason>"],
-                        "whatYouNeedToDo": ["<Generate specific step 1>", "<Generate specific step 2>", "<Generate specific step 3>"],
-                        "output": "<Describe the specific technical deliverable>",
-                        "outputExample": "<Provide a real example of the output>"
+          "type": "object",
+          "properties": {
+            "phases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "description": "Highly specific phase title" },
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "description": "Unique task ID, e.g., t1, t2" },
+                        "title": { "type": "string", "description": "Descriptive task title" },
+                        "estimatedHours": { "type": "number" },
+                        "completed": { "type": "boolean", "default": false },
+                        "assignee": { "type": "string", "description": "Defaults to creator name" },
+                        "cost": { "type": "string" },
+                        "prereqs": { "type": "string" },
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "whatThisMeans": { "type": "string", "description": "Detailed 2-sentence explanation of the task." },
+                            "whatThisMeansExample": { "type": "array", "items": { "type": "string" }, "description": "2 specific code/tool examples." },
+                            "whyItMatters": { "type": "array", "items": { "type": "string" }, "description": "2 specific reasons why this task is critical." },
+                            "whatYouNeedToDo": { "type": "array", "items": { "type": "string" }, "description": "3 highly actionable steps to complete this task." },
+                            "output": { "type": "string", "description": "The exact technical deliverable (e.g., 'A running Docker container')." },
+                            "outputExample": { "type": "string", "description": "A specific example of the output." }
+                          },
+                          "required": ["whatThisMeans", "whatThisMeansExample", "whyItMatters", "whatYouNeedToDo", "output", "outputExample"]
+                        }
+                      },
+                      "required": ["id", "title", "estimatedHours", "completed", "assignee", "cost", "prereqs", "details"]
                     }
-                }
-              ]
+                  }
+                },
+                "required": ["title", "tasks"]
+              }
             }
-          ]
+          },
+          "required": ["phases"]
         }
         `;
 
@@ -361,7 +248,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: `Please generate the execution roadmap for: ${idea}` }
                 ],
-                temperature: 0.1,
+                temperature: 0.3,
                 max_tokens: 8000,
                 response_format: { type: "json_object" }
             })
@@ -405,7 +292,7 @@ app.post('/api/share', requireAuth, async (req, res) => {
         await supabase.from('roadmaps')
             .update({ data: { ...roadmap, shareId } })
             .eq('id', roadmap.id)
-            .eq('user_id', req.user.id);
+            .eq('user_id', req.auth.userId);
 
         console.log(`📡 Created share link: ${shareId} for: ${roadmap.ideaName}`);
         res.json({ shareId, roadmap: { ...roadmap, shareId } });
