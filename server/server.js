@@ -6,6 +6,10 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
+const { google } = require('googleapis');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const app = express();
 const server = http.createServer(app);
@@ -333,9 +337,127 @@ app.post('/api/shared-roadmap/:id/join', async (req, res) => {
         roadmap.teamMembers.push(name);
         await supabase.from('roadmaps').update({ data: roadmap }).eq('id', data.id);
         io.to(data.id).emit('roadmap_updated', roadmap);
+        
+        // Send Email Notification to Owner
+        try {
+            // 1. Get the roadmap owner's user_id from the database row
+            // Note: we need the user_id column, so we should fetch it.
+            const { data: rowData } = await supabase.from('roadmaps').select('user_id').eq('id', data.id).single();
+            if (rowData && rowData.user_id) {
+                // 2. Fetch the owner's email from Clerk
+                const clerkResp = await fetch(`https://api.clerk.com/v1/users/${rowData.user_id}`, {
+                    headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` }
+                });
+                if (clerkResp.ok) {
+                    const clerkUser = await clerkResp.json();
+                    const ownerEmail = clerkUser.email_addresses?.[0]?.email_address;
+                    
+                    // 3. Send email via Resend
+                    if (ownerEmail && process.env.RESEND_API_KEY) {
+                        await resend.emails.send({
+                            from: 'Chaos2Clarity <onboarding@resend.dev>', // default resend sandbox domain
+                            to: ownerEmail,
+                            subject: `${name} joined your roadmap!`,
+                            html: `<div style="font-family: sans-serif; padding: 20px;">
+                                <h2 style="color: #6366f1;">New Team Member!</h2>
+                                <p><strong>${name}</strong> has just joined your project roadmap: <em>${roadmap.ideaName}</em>.</p>
+                                <p>Log in to Chaos2Clarity to chat with them and start executing your master plan.</p>
+                            </div>`
+                        });
+                        console.log(`✉️ Email notification sent to ${ownerEmail}`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Failed to send join email notification:", err);
+        }
     }
 
     res.json({ teamMembers: roadmap.teamMembers });
+});
+
+// ─── Google Calendar Sync ───────────────────────────────────────────────────────
+app.post('/api/calendar/sync', requireAuth, async (req, res) => {
+    try {
+        const { roadmap } = req.body;
+        if (!roadmap || !roadmap.milestones) return res.status(400).json({ error: "Invalid roadmap data." });
+
+        // Fetch user's Google OAuth token from Clerk
+        const clerkResp = await fetch(`https://api.clerk.com/v1/users/${req.auth.userId}/oauth_access_tokens/oauth_google`, {
+            headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` }
+        });
+        
+        if (!clerkResp.ok) {
+            return res.status(401).json({ error: "Could not fetch Google OAuth token. Ensure Calendar scopes are enabled in Clerk." });
+        }
+
+        const tokens = await clerkResp.json();
+        if (!tokens || tokens.length === 0) {
+            return res.status(401).json({ error: "No Google OAuth token found. Have you signed in with Google?" });
+        }
+
+        const accessToken = tokens[0].token;
+
+        const auth = new google.auth.OAuth2();
+        auth.setCredentials({ access_token: accessToken });
+        const calendar = google.calendar({ version: 'v3', auth });
+
+        // 1. Check if Chaos2Clarity calendar exists, or create it
+        const calendarList = await calendar.calendarList.list();
+        let c2cCalendar = calendarList.data.items.find(c => c.summary === 'Chaos2Clarity');
+
+        if (!c2cCalendar) {
+            const created = await calendar.calendars.insert({
+                requestBody: { summary: 'Chaos2Clarity', description: 'Technical Roadmaps from Chaos2Clarity' }
+            });
+            c2cCalendar = created.data;
+        }
+
+        // 2. Schedule events
+        // We'll simulate a schedule starting tomorrow, adding tasks sequentially
+        let currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(9, 0, 0, 0); // start at 9am
+
+        let eventsCreated = 0;
+
+        for (const milestone of roadmap.milestones) {
+            for (const task of milestone.tasks) {
+                if (task.completed) continue;
+
+                const hours = task.estimatedHours || 2;
+                
+                // If it's past 5pm, move to next day 9am
+                if (currentDate.getHours() + hours > 17) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    currentDate.setHours(9, 0, 0, 0);
+                }
+
+                const end = new Date(currentDate);
+                end.setHours(currentDate.getHours() + hours);
+
+                await calendar.events.insert({
+                    calendarId: c2cCalendar.id,
+                    requestBody: {
+                        summary: `[C2C] ${task.title}`,
+                        description: `Milestone: ${milestone.title}\n\nProject: ${roadmap.ideaName}\n\nDetails: ${task.details?.whatThisMeans || ''}`,
+                        start: { dateTime: currentDate.toISOString() },
+                        end: { dateTime: end.toISOString() }
+                    }
+                });
+
+                eventsCreated++;
+                // advance time
+                currentDate = end;
+            }
+        }
+
+        res.json({ success: true, message: `Successfully synced ${eventsCreated} tasks to Google Calendar!` });
+
+    } catch (error) {
+        console.error("Calendar Sync Error:", error);
+        res.status(500).json({ error: "Failed to sync calendar", details: error.message });
+    }
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────

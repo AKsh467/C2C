@@ -10,6 +10,7 @@ import TeamChat from './components/TeamChat';
 import { generateRoadmap } from './utils/mockDataEngine';
 import { generateAiRoadmap } from './utils/aiDataEngine';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
+import html2pdf from 'html2pdf.js';
 import './App.css';
 
 // Inline project switcher dropdown for the roadmap view header
@@ -384,6 +385,98 @@ function App() {
     }
   };
 
+  const handleExportMarkdown = () => {
+    if (!activeRoadmap) return;
+    let md = `# ${activeRoadmap.ideaName}\n\n`;
+    activeRoadmap.milestones.forEach((m, i) => {
+      md += `## Phase ${i + 1}: ${m.title}\n\n`;
+      m.tasks.forEach(t => {
+        md += `### [${t.completed ? 'x' : ' '}] ${t.title}\n`;
+        if (t.details) {
+          md += `**What this means:** ${t.details.whatThisMeans}\n\n`;
+          if (t.details.whatYouNeedToDo) {
+            md += `**Steps:**\n`;
+            t.details.whatYouNeedToDo.forEach(step => md += `- ${step}\n`);
+            md += `\n`;
+          }
+          if (t.details.output) {
+            md += `**Output:** ${t.details.output}\n\n`;
+          }
+        }
+      });
+    });
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeRoadmap.ideaName.replace(/\\s+/g, '_')}_Roadmap.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPDF = () => {
+    if (!activeRoadmap) return;
+    const element = document.getElementById('roadmap-content-wrapper');
+    if (!element) return;
+    const opt = {
+      margin: 0.5,
+      filename: `${activeRoadmap.ideaName.replace(/\\s+/g, '_')}_Roadmap.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
+  const handleSyncCalendar = async () => {
+    if (!activeRoadmap) return;
+    try {
+      const token = await getToken();
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      
+      setNotifications(prev => [{
+        id: Date.now().toString() + '-syncing',
+        type: 'system',
+        title: 'Syncing to Calendar...',
+        message: 'Pushing tasks to your Google Calendar...',
+        time: 'Just now',
+        read: false
+      }, ...prev]);
+
+      const res = await fetch(`${backendUrl}/api/calendar/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ roadmap: activeRoadmap })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to sync calendar');
+      }
+
+      setNotifications(prev => [{
+        id: Date.now().toString() + '-sync-success',
+        type: 'success',
+        title: 'Calendar Synced!',
+        message: data.message || 'Tasks successfully added to Google Calendar.',
+        time: 'Just now',
+        read: false
+      }, ...prev]);
+
+    } catch (err) {
+      console.error('Calendar sync error:', err);
+      setNotifications(prev => [{
+        id: Date.now().toString() + '-sync-error',
+        type: 'error',
+        title: 'Calendar Sync Failed',
+        message: err.message,
+        time: 'Just now',
+        read: false
+      }, ...prev]);
+    }
+  };
+
   // Calculate totals across all roadmaps
   const totalIdeas = roadmaps.length;
   const activeCount = roadmaps.filter(r => r.milestones.some(m => m.progress < 100)).length;
@@ -476,6 +569,35 @@ function App() {
                 <h1 style={{ fontSize: '2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{activeRoadmap.ideaName}</h1>
               )}
               <div className="flex items-center gap-2">
+                {/* 
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleSyncCalendar}
+                  style={{ color: 'var(--accent-indigo)', borderColor: 'rgba(99,102,241,0.3)' }}
+                >
+                  📅 Sync to Calendar
+                </button>
+                */}
+                <div style={{ position: 'relative' }}>
+                  <button className="btn btn-secondary" onClick={(e) => {
+                    const el = e.currentTarget.nextElementSibling;
+                    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                  }}>
+                    Export ▼
+                  </button>
+                  <div style={{
+                    display: 'none', position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem',
+                    background: 'var(--card-bg)', border: '1px solid var(--panel-border)',
+                    borderRadius: '8px', boxShadow: 'var(--shadow-lg)', zIndex: 100, minWidth: '150px'
+                  }}>
+                    <button className="btn btn-secondary" style={{ width: '100%', border: 'none', borderRadius: 0, justifyContent: 'flex-start', borderBottom: '1px solid var(--panel-border)' }} onClick={handleExportPDF}>
+                      Export as PDF
+                    </button>
+                    <button className="btn btn-secondary" style={{ width: '100%', border: 'none', borderRadius: 0, justifyContent: 'flex-start' }} onClick={handleExportMarkdown}>
+                      Export as Markdown
+                    </button>
+                  </div>
+                </div>
                 <button
                   className="btn btn-secondary"
                   onClick={() => handleDeleteRoadmap(activeRoadmap.id)}
@@ -486,7 +608,9 @@ function App() {
                 <button className="btn btn-secondary" onClick={() => setView('ideation')}>+ New Idea</button>
               </div>
             </div>
-            <RoadmapView roadmap={activeRoadmap} onUpdate={handleUpdateRoadmap} setNotifications={setNotifications} />
+            <div id="roadmap-content-wrapper">
+              <RoadmapView roadmap={activeRoadmap} onUpdate={handleUpdateRoadmap} setNotifications={setNotifications} />
+            </div>
           </div>
         ) : (view === 'roadmap' && !activeRoadmap && (
           <div className="fade-in">
