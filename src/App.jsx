@@ -414,22 +414,32 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!activeRoadmap) return;
     const element = document.getElementById('roadmap-content-wrapper');
     if (!element) return;
+
+    // Temporarily force printer-friendly styles (white bg, black text)
+    element.classList.add('pdf-export-mode');
+
     const opt = {
       margin: 0.5,
-      filename: `${activeRoadmap.ideaName.replace(/\\s+/g, '_')}_Roadmap.pdf`,
+      filename: `${activeRoadmap.ideaName.replace(/\s+/g, '_')}_Roadmap.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2, 
         useCORS: true, 
-        backgroundColor: theme === 'dark' ? '#111827' : '#FFFFFF' 
+        backgroundColor: '#FFFFFF' 
       },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(element).save();
+
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } finally {
+      // Remove styles after PDF is generated
+      element.classList.remove('pdf-export-mode');
+    }
   };
 
   const handleSyncCalendar = async () => {

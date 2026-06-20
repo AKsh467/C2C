@@ -385,3 +385,12 @@ body.theme-light .input-base option {
 @media (min-width: 1024px) { .auth-sidebar { display: flex !important; } }
 
 @media print { body * { visibility: hidden; } #roadmap-content-wrapper, #roadmap-content-wrapper * { visibility: visible; } #roadmap-content-wrapper { position: absolute; left: 0; top: 0; width: 100%; } }
+
+.pdf-export-mode {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+}
+.pdf-export-mode * {
+  color: #000000 !important;
+  border-color: #E5E7EB !important;
+}
