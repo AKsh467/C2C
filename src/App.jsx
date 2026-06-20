@@ -290,10 +290,10 @@ function App() {
     };
 
     try {
-      const generated = await generateAiRoadmap(enrichedFormData);
+      const token = await getToken();
+      const generated = await generateAiRoadmap(enrichedFormData, token);
 
       // Persist to Supabase
-      const token = await getToken();
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       await fetch(`${backendUrl}/api/roadmaps`, {
         method: 'POST',

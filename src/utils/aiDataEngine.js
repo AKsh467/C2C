@@ -1,9 +1,12 @@
-export const generateAiRoadmap = async (formData) => {
+export const generateAiRoadmap = async (formData, token) => {
     try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
         const response = await fetch(`${backendUrl}/api/generate-roadmap`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
             body: JSON.stringify({ formData })
         });
 
