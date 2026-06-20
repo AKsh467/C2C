@@ -460,6 +460,15 @@ app.post('/api/calendar/sync', requireAuth, async (req, res) => {
     }
 });
 
+// ─── Error Handling Middleware ────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+    console.error('Global Error Handler:', err.stack || err.message);
+    res.status(err.status || 401).json({ 
+        error: 'Authentication or Server Error', 
+        details: err.message || 'Internal Server Error' 
+    });
+});
+
 // ─── Start Server ─────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
