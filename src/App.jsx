@@ -422,7 +422,11 @@ function App() {
       margin: 0.5,
       filename: `${activeRoadmap.ideaName.replace(/\\s+/g, '_')}_Roadmap.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: theme === 'dark' ? '#111827' : '#FFFFFF' 
+      },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     html2pdf().set(opt).from(element).save();
