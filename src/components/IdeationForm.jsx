@@ -9,7 +9,7 @@ const categoryTimelines = {
     'Personal Goal': 4
 };
 
-const IdeationForm = ({ onSubmit, isGenerating, error }) => {
+const IdeationForm = ({ onSubmit, isGenerating, error, roadmaps = [] }) => {
     const [formData, setFormData] = useState({
         idea: '',
         category: 'App / Software Development',
@@ -100,6 +100,47 @@ const IdeationForm = ({ onSubmit, isGenerating, error }) => {
                         required
                         style={{ resize: 'vertical' }}
                     ></textarea>
+                    
+                    {formData.idea.trim() === '' && (
+                        <div style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
+                            {roadmaps.length > 0 && (
+                                <div style={{ marginBottom: '0.75rem' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Recent:</span>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                                        {roadmaps.slice(0, 3).map(r => (
+                                            <button 
+                                                key={r.id} 
+                                                type="button" 
+                                                onClick={() => setFormData({ ...formData, idea: r.ideaName })}
+                                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--panel-border)', borderRadius: '12px', padding: '0.35rem 0.75rem', color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.8rem' }}
+                                                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                                                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+                                            >
+                                                {r.ideaName}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <div>
+                                <span style={{ color: 'var(--text-secondary)' }}>Try this:</span>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                                    {["Start a YouTube channel like Mr. Beast", "Build an AI SaaS for dentists", "Launch a 30-day fitness challenge"].map((s, i) => (
+                                        <button 
+                                            key={i} 
+                                            type="button" 
+                                            onClick={() => setFormData({ ...formData, idea: s })}
+                                            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '12px', padding: '0.35rem 0.75rem', color: 'var(--accent-indigo)', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.8rem' }}
+                                            onMouseOver={(e) => e.target.style.background = 'rgba(99,102,241,0.2)'}
+                                            onMouseOut={(e) => e.target.style.background = 'rgba(99,102,241,0.1)'}
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>

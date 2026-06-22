@@ -11,6 +11,7 @@ import { generateRoadmap } from './utils/mockDataEngine';
 import { generateAiRoadmap } from './utils/aiDataEngine';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import html2pdf from 'html2pdf.js';
+import CustomCursor from './components/CustomCursor';
 import './App.css';
 
 // Inline project switcher dropdown for the roadmap view header
@@ -90,6 +91,7 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('c2c_theme') || 'dark';
   });
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
 
   useEffect(() => {
     document.body.className = `theme-${theme}`;
@@ -416,8 +418,16 @@ function App() {
 
   const handleExportPDF = async () => {
     if (!activeRoadmap) return;
+    
+    setIsPdfExporting(true);
+    // Wait a brief moment for React to render all expanded tasks
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     const element = document.getElementById('roadmap-content-wrapper');
-    if (!element) return;
+    if (!element) {
+        setIsPdfExporting(false);
+        return;
+    }
 
     // Temporarily force printer-friendly styles (white bg, black text)
     element.classList.add('pdf-export-mode');
@@ -439,6 +449,7 @@ function App() {
     } finally {
       // Remove styles after PDF is generated
       element.classList.remove('pdf-export-mode');
+      setIsPdfExporting(false);
     }
   };
 
@@ -516,8 +527,10 @@ function App() {
   }
 
   return (
-    <Layout
-      view={view}
+    <>
+      <CustomCursor />
+      <Layout
+        view={view}
       setView={setView}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
@@ -563,7 +576,7 @@ function App() {
           <div className="fade-in">
             <h1 style={{ marginBottom: '0.5rem', fontSize: '2.5rem' }}>Start your journey</h1>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>Define an objective to build an execution plan.</p>
-            <IdeationForm onSubmit={handleIdeaSubmit} isGenerating={isGenerating} error={generationError} />
+            <IdeationForm onSubmit={handleIdeaSubmit} isGenerating={isGenerating} error={generationError} roadmaps={roadmaps} />
           </div>
         )}
 
@@ -623,7 +636,7 @@ function App() {
               </div>
             </div>
             <div id="roadmap-content-wrapper">
-              <RoadmapView roadmap={activeRoadmap} onUpdate={handleUpdateRoadmap} setNotifications={setNotifications} />
+              <RoadmapView roadmap={activeRoadmap} onUpdate={handleUpdateRoadmap} setNotifications={setNotifications} isPdfExporting={isPdfExporting} />
             </div>
           </div>
         ) : (view === 'roadmap' && !activeRoadmap && (
@@ -669,6 +682,7 @@ function App() {
         )}
       </div>
     </Layout>
+    </>
   );
 }
 

@@ -6,7 +6,7 @@ import ActivityFeed from './ActivityFeed';
 import TeamCollaboration from './TeamCollaboration';
 import ErrorBoundary from './ErrorBoundary';
 
-const RoadmapView = ({ roadmap, onUpdate, setNotifications }) => {
+const RoadmapView = ({ roadmap, onUpdate, setNotifications, isPdfExporting }) => {
     // Local UI State Only
     const [activeTab, setActiveTab] = useState('timeline');
     const [expandedMilestones, setExpandedMilestones] = useState(
@@ -51,10 +51,14 @@ const RoadmapView = ({ roadmap, onUpdate, setNotifications }) => {
     const handleShare = async () => {
         setIsSharing(true);
         try {
+            const token = await window.Clerk?.session?.getToken();
             const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
             const response = await fetch(`${backendUrl}/api/share`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
                 body: JSON.stringify({ roadmap }),
             });
 
@@ -337,7 +341,7 @@ const RoadmapView = ({ roadmap, onUpdate, setNotifications }) => {
                                 {/* Expandable Tasks Container */}
                                 <div style={{
                                     display: 'grid',
-                                    gridTemplateRows: expandedMilestones[milestone.id] ? '1fr' : '0fr',
+                                    gridTemplateRows: (expandedMilestones[milestone.id] || isPdfExporting) ? '1fr' : '0fr',
                                     transition: 'grid-template-rows 0.3s ease-in-out'
                                 }}>
                                     <div style={{ overflow: 'hidden' }}>
@@ -400,7 +404,7 @@ const RoadmapView = ({ roadmap, onUpdate, setNotifications }) => {
                                                             </div>
                                                         </div>
 
-                                                        {expandedTasks[task.id] && task.details && (
+                                                        {(expandedTasks[task.id] || isPdfExporting) && task.details && (
                                                             <div style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--panel-border)', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginLeft: '2rem' }}>
                                                                 {isEditing ? (
                                                                     <div className="flex-col gap-4">

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { User, Bell, Shield, Moon, Sun, Monitor, Trash2 } from 'lucide-react';
+import { UserProfile } from '@clerk/clerk-react';
 
 const SettingsView = ({ userProfile, setUserProfile, setNotifications, theme, setTheme, onLogout, notificationsPrefs, setNotificationsPrefs }) => {
     const [formState, setFormState] = useState({ ...userProfile });
@@ -110,90 +111,23 @@ const SettingsView = ({ userProfile, setUserProfile, setNotifications, theme, se
 
             <div className="flex-col gap-6">
                 {/* Profile Section */}
-                <div className="saas-card" style={{ padding: '2rem' }}>
-                    <div className="flex items-center gap-3" style={{ marginBottom: '2rem' }}>
-                        <div style={{ padding: '0.6rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '10px' }}>
-                            <User size={20} color="var(--accent-indigo)" />
-                        </div>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Public Profile</h3>
-                    </div>
-
-                    <div className="flex flex-col gap-5">
-                        <div className="flex items-center gap-6">
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                borderRadius: '50%',
-                                background: formState.avatar ? 'transparent' : 'var(--accent-gradient)',
-                                backgroundImage: formState.avatar ? `url(${formState.avatar})` : 'none',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '2rem',
-                                fontWeight: 700,
-                                border: formState.avatar ? '1px solid var(--panel-border)' : 'none'
-                            }}>
-                                {!formState.avatar && (formState.name ? formState.name[0].toUpperCase() : 'U')}
-                            </div>
-                            <div className="flex-col gap-2">
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleAvatarChange}
-                                    accept="image/png, image/jpeg, image/jpg, image/webp"
-                                    style={{ display: 'none' }}
-                                />
-                                <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={() => fileInputRef.current?.click()}>
-                                    Change Avatar
-                                </button>
-                                <button className="btn-ghost" style={{ fontSize: '0.85rem' }} onClick={() => setFormState(prev => ({ ...prev, avatar: null }))}>
-                                    Remove
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                            <div className="flex-col gap-2">
-                                <label className="input-label" style={{ fontWeight: 600 }}>Full Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    className="input-base"
-                                    value={formState.name}
-                                    onChange={handleChange}
-                                    placeholder="Enter your name"
-                                />
-                            </div>
-                            <div className="flex-col gap-2">
-                                <label className="input-label" style={{ fontWeight: 600 }}>Role</label>
-                                <input
-                                    type="text"
-                                    name="role"
-                                    className="input-base"
-                                    value={formState.role}
-                                    disabled
-                                    style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex-col gap-2">
-                            <label className="input-label" style={{ fontWeight: 600 }}>Bio</label>
-                            <textarea
-                                name="bio"
-                                className="input-base"
-                                rows="3"
-                                value={formState.bio}
-                                onChange={handleChange}
-                                placeholder="A brief description about yourself"
-                                style={{ resize: 'vertical', minHeight: '100px' }}
-                            ></textarea>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>This will be displayed on your public profile.</p>
-                        </div>
-                    </div>
+                <div className="saas-card" style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+                    <UserProfile 
+                        appearance={{
+                            elements: {
+                                card: {
+                                    boxShadow: 'none',
+                                    backgroundColor: 'transparent'
+                                }
+                            },
+                            variables: {
+                                colorPrimary: '#6366F1',
+                                colorBackground: theme === 'dark' ? '#111827' : '#FFFFFF',
+                                colorText: theme === 'dark' ? '#FFFFFF' : '#111827',
+                                colorTextSecondary: '#9CA3AF'
+                            }
+                        }}
+                    />
                 </div>
 
                 {/* Theme & Visuals Section */}
