@@ -11,7 +11,6 @@ import { generateRoadmap } from './utils/mockDataEngine';
 import { generateAiRoadmap } from './utils/aiDataEngine';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import html2pdf from 'html2pdf.js';
-import CustomCursor from './components/CustomCursor';
 import './App.css';
 
 // Inline project switcher dropdown for the roadmap view header
@@ -97,6 +96,56 @@ function App() {
     document.body.className = `theme-${theme}`;
     localStorage.setItem('c2c_theme', theme);
   }, [theme]);
+
+  // Ambient Blur Glow tracking the mouse
+  useEffect(() => {
+    if (window.matchMedia('(pointer: coarse)').matches) return; // Skip on mobile
+
+    const glow = document.createElement('div');
+    glow.className = 'ambient-glow';
+    document.body.appendChild(glow);
+
+    // Initial position off-screen
+    glow.style.transform = 'translate(-2000px, -2000px)';
+
+    let rafId;
+    let targetX = -2000;
+    let targetY = -2000;
+
+    const moveGlow = (e) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      // Use requestAnimationFrame for smooth, tear-free tracking
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        // Center the glow (assumes width/height is handled by CSS)
+        // We'll translate based on the element's actual dimensions
+        const rect = glow.getBoundingClientRect();
+        glow.style.transform = `translate(${targetX - rect.width/2}px, ${targetY - rect.height/2}px)`;
+      });
+    };
+
+    const handleMouseOver = (e) => {
+      const target = e.target;
+      const isClickable = window.getComputedStyle(target).cursor.includes('pointer') || target.tagName.toLowerCase() === 'button' || target.tagName.toLowerCase() === 'a';
+      
+      if (isClickable) {
+        glow.classList.add('glow-active');
+      } else {
+        glow.classList.remove('glow-active');
+      }
+    };
+
+    window.addEventListener('mousemove', moveGlow, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
+
+    return () => {
+      window.removeEventListener('mousemove', moveGlow);
+      window.removeEventListener('mouseover', handleMouseOver);
+      cancelAnimationFrame(rafId);
+      if (glow.parentNode) glow.parentNode.removeChild(glow);
+    };
+  }, []);
 
   // Fetch roadmaps when signed in
   useEffect(() => {
@@ -528,7 +577,6 @@ function App() {
 
   return (
     <>
-      <CustomCursor />
       <Layout
         view={view}
       setView={setView}
