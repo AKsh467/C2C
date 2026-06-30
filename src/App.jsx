@@ -298,11 +298,15 @@ function App() {
 
       // Persist to Supabase
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      await fetch(`${backendUrl}/api/roadmaps`, {
+      const saveResponse = await fetch(`${backendUrl}/api/roadmaps`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ roadmap: generated })
       });
+
+      if (!saveResponse.ok) {
+        throw new Error('Failed to save to database. Check backend environment variables.');
+      }
 
       setNotifications(prev => [{
         id: Date.now().toString() + '-ai-notif',
@@ -344,11 +348,14 @@ function App() {
     try {
       const token = await getToken();
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      await fetch(`${backendUrl}/api/roadmaps/${updatedRoadmap.id}`, {
+      const updateResponse = await fetch(`${backendUrl}/api/roadmaps/${updatedRoadmap.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ roadmap: updatedRoadmap })
       });
+      if (!updateResponse.ok) {
+        console.error("Failed to update on backend.");
+      }
     } catch (err) {
       console.error('Failed to persist roadmap update:', err);
     }
