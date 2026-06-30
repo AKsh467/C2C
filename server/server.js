@@ -36,10 +36,10 @@ if (!GROQ_API_KEY) {
     console.warn('⚠️  WARNING: GROQ_API_KEY is not defined. AI routes will fail.');
 }
 
-const { clerkMiddleware, requireAuth: ClerkExpressRequireAuth } = require('@clerk/express');
+const { clerkMiddleware, getAuth } = require('@clerk/express');
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
-const requireAuth = ClerkExpressRequireAuth();
+// In @clerk/express v2, requireAuth is deprecated. We use getAuth(req) in the routes.
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors());
@@ -85,10 +85,10 @@ io.on('connection', (socket) => {
 // ─── Roadmap Routes ───────────────────────────────────────────────────────────
 
 // GET all roadmaps for logged-in user
-app.get('/api/roadmaps', requireAuth, async (req, res) => {
+app.get('/api/roadmaps', async (req, res) => {
     try {
-        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
-        if (!userId) return res.status(400).json({ error: 'Missing User ID' });
+        const { userId } = getAuth(req);
+        if (!userId) return res.status(401).json({ error: 'Unauthorized. Missing User ID' });
 
         const { data, error } = await supabase
             .from('roadmaps')
@@ -107,17 +107,16 @@ app.get('/api/roadmaps', requireAuth, async (req, res) => {
 });
 
 // SAVE a new roadmap
-app.post('/api/roadmaps', requireAuth, async (req, res) => {
+app.post('/api/roadmaps', async (req, res) => {
     try {
         const { roadmap } = req.body;
         if (!roadmap || !roadmap.id) return res.status(400).json({ error: 'Invalid roadmap.' });
 
-        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
+        const { userId } = getAuth(req);
 
         if (!userId) {
-            return res.status(400).json({ 
-                error: 'Authentication failed: User ID not found.', 
-                details: `req.auth contents: ${JSON.stringify(req.auth)}` 
+            return res.status(401).json({ 
+                error: 'Authentication failed: User ID not found via getAuth(req).'
             });
         }
 
@@ -141,12 +140,12 @@ app.post('/api/roadmaps', requireAuth, async (req, res) => {
 });
 
 // UPDATE a roadmap (Kanban drag, task completion, etc.)
-app.put('/api/roadmaps/:id', requireAuth, async (req, res) => {
+app.put('/api/roadmaps/:id', async (req, res) => {
     try {
         const { roadmap } = req.body;
-        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
+        const { userId } = getAuth(req);
 
-        if (!userId) return res.status(400).json({ error: 'Missing User ID' });
+        if (!userId) return res.status(401).json({ error: 'Unauthorized. Missing User ID' });
 
         const { error } = await supabase
             .from('roadmaps')
