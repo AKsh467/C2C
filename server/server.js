@@ -117,11 +117,14 @@ app.post('/api/roadmaps', requireAuth, async (req, res) => {
             data: roadmap,
         });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase insert error details:', error);
+            throw new Error(error.message || 'Supabase insert failed');
+        }
         res.status(201).json({ success: true });
     } catch (error) {
         console.error('Save roadmap error:', error);
-        res.status(500).json({ error: 'Failed to save roadmap.' });
+        res.status(500).json({ error: 'Failed to save roadmap.', details: error.message || error.toString() });
     }
 });
 

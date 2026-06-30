@@ -305,7 +305,8 @@ function App() {
       });
 
       if (!saveResponse.ok) {
-        throw new Error('Failed to save to database. Check backend environment variables.');
+        const errData = await saveResponse.json().catch(() => ({}));
+        throw new Error(`Failed to save to database. Details: ${errData.details || errData.error || 'Check backend environment variables.'}`);
       }
 
       setNotifications(prev => [{
