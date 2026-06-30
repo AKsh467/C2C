@@ -162,13 +162,16 @@ app.put('/api/roadmaps/:id', async (req, res) => {
 });
 
 // DELETE a roadmap
-app.delete('/api/roadmaps/:id', requireAuth, async (req, res) => {
+app.delete('/api/roadmaps/:id', async (req, res) => {
     try {
+        const { userId } = getAuth(req);
+        if (!userId) return res.status(401).json({ error: 'Unauthorized. Missing User ID' });
+
         const { error } = await supabase
             .from('roadmaps')
             .delete()
             .eq('id', req.params.id)
-            .eq('user_id', req.auth.userId);
+            .eq('user_id', userId);
 
         if (error) throw error;
         res.json({ success: true });
@@ -199,7 +202,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
         TIMELINE: "${timeline} weeks"
         TEAM SIZE: ${sizeInt} people
         CREATOR: "${creatorName}"
-        SCOPE: ${scope}
+        SCOPE: "${scope}"
         BUDGET: ${budget ? '$' + budget : 'Unknown/N/A'}
         
         STRICT STRUCTURAL CONSTRAINTS:
@@ -303,9 +306,12 @@ app.post('/api/generate-roadmap', async (req, res) => {
 
 // ─── Share Routes (now persisted in Supabase) ─────────────────────────────────
 
-app.post('/api/share', requireAuth, async (req, res) => {
+app.post('/api/share', async (req, res) => {
     try {
         const { roadmap } = req.body;
+        const { userId } = getAuth(req);
+        if (!userId) return res.status(401).json({ error: 'Unauthorized. Missing User ID' });
+
         if (!roadmap || !roadmap.id) return res.status(400).json({ error: "Invalid roadmap payload." });
 
         const shareId = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -314,7 +320,7 @@ app.post('/api/share', requireAuth, async (req, res) => {
         await supabase.from('roadmaps')
             .update({ data: { ...roadmap, shareId } })
             .eq('id', roadmap.id)
-            .eq('user_id', req.auth.userId);
+            .eq('user_id', userId);
 
         console.log(`📡 Created share link: ${shareId} for: ${roadmap.ideaName}`);
         res.json({ shareId, roadmap: { ...roadmap, shareId } });
@@ -395,13 +401,16 @@ app.post('/api/shared-roadmap/:id/join', async (req, res) => {
 });
 
 // ─── Google Calendar Sync ───────────────────────────────────────────────────────
-app.post('/api/calendar/sync', requireAuth, async (req, res) => {
+app.post('/api/calendar/sync', async (req, res) => {
     try {
         const { roadmap } = req.body;
+        const { userId } = getAuth(req);
+        if (!userId) return res.status(401).json({ error: 'Unauthorized. Missing User ID' });
+        
         if (!roadmap || !roadmap.milestones) return res.status(400).json({ error: "Invalid roadmap data." });
 
         // Fetch user's Google OAuth token from Clerk
-        const clerkResp = await fetch(`https://api.clerk.com/v1/users/${req.auth.userId}/oauth_access_tokens/oauth_google`, {
+        const clerkResp = await fetch(`https://api.clerk.com/v1/users/${userId}/oauth_access_tokens/oauth_google`, {
             headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` }
         });
         
