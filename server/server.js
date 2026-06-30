@@ -87,10 +87,13 @@ io.on('connection', (socket) => {
 // GET all roadmaps for logged-in user
 app.get('/api/roadmaps', requireAuth, async (req, res) => {
     try {
+        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
+        if (!userId) return res.status(400).json({ error: 'Missing User ID' });
+
         const { data, error } = await supabase
             .from('roadmaps')
             .select('*')
-            .eq('user_id', req.auth.userId)
+            .eq('user_id', userId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -109,9 +112,18 @@ app.post('/api/roadmaps', requireAuth, async (req, res) => {
         const { roadmap } = req.body;
         if (!roadmap || !roadmap.id) return res.status(400).json({ error: 'Invalid roadmap.' });
 
+        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
+
+        if (!userId) {
+            return res.status(400).json({ 
+                error: 'Authentication failed: User ID not found.', 
+                details: `req.auth contents: ${JSON.stringify(req.auth)}` 
+            });
+        }
+
         const { error } = await supabase.from('roadmaps').insert({
             id: roadmap.id,
-            user_id: req.auth.userId,
+            user_id: userId,
             idea_name: roadmap.ideaName,
             category: roadmap.category,
             data: roadmap,
@@ -132,11 +144,15 @@ app.post('/api/roadmaps', requireAuth, async (req, res) => {
 app.put('/api/roadmaps/:id', requireAuth, async (req, res) => {
     try {
         const { roadmap } = req.body;
+        const userId = req.auth?.userId || req.auth?.id || req.auth?.sub || (req.auth?.sessionClaims && req.auth.sessionClaims.sub);
+
+        if (!userId) return res.status(400).json({ error: 'Missing User ID' });
+
         const { error } = await supabase
             .from('roadmaps')
             .update({ data: roadmap, updated_at: new Date().toISOString() })
             .eq('id', req.params.id)
-            .eq('user_id', req.auth.userId);
+            .eq('user_id', userId);
 
         if (error) throw error;
         res.json({ success: true });
