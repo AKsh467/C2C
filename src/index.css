@@ -1,25 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Default = Dark Mode */
-  --bg-color: #0B0F19;
+  /* Premium Dark Mode */
+  --bg-color: #050505;
   --card-bg: #111827;
   --panel-bg: #111827;
   --panel-border: rgba(255, 255, 255, 0.05);
   --text-primary: #FFFFFF;
   --text-secondary: #9CA3AF;
 
-  --accent-purple: #7C3AED;
+  --accent-purple: #8B5CF6;
   --accent-blue: #3B82F6;
   --accent-indigo: #6366F1;
-  --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #6366F1 100%);
+  --accent-gradient: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
 
   --success-color: #10B981;
   --warning-color: #F59E0B;
   --danger-color: #EF4444;
 
   --font-main: 'Inter', system-ui, sans-serif;
-  --font-heading: 'Poppins', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -27,9 +27,9 @@
   --radius-full: 9999px;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -59,9 +59,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  letter-spacing: 0.015em;
   min-height: 100vh;
   overflow-x: hidden;
   transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+button {
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+button:active, .saas-card:active {
+  transform: scale(0.98) !important;
 }
 
 
@@ -106,22 +115,33 @@ body.theme-light ::-webkit-scrollbar-thumb {
   background: var(--card-bg);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .saas-card:hover {
-  border-color: rgba(124, 58, 237, 0.4);
-  box-shadow: var(--shadow-premium);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: var(--shadow-premium), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
 
 .glass-effect {
   background: rgba(17, 24, 39, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.glass-effect::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
 }
 
 body.theme-light .glass-effect {
